@@ -3,7 +3,7 @@
 
 function LoadWeekly(_resultCurrentRowId) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var resultSheet = ss.getSheetByName('Sheet1');
+    var resultSheet = ss.getSheetByName('board');
     var resultValues = resultSheet.getDataRange().getValues();
     var _theDay = {};
 
@@ -12,7 +12,8 @@ function LoadWeekly(_resultCurrentRowId) {
     dataValues = _filter(dataValues);
     return {
         run: function (runAfterAll) {
-            _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 13));
+            _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
+            _printTableTitle()
             dataValues.forEach(function (row, key) {
                 if (!!_theDay.date && _theDay.date.date.getTime() != row[2].getTime()) {
                     _printDay(_theDay);
@@ -24,7 +25,7 @@ function LoadWeekly(_resultCurrentRowId) {
                 }
                 _theDay.events.push(_parseEvent(row));
             });
-            _separator(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 13));
+            _separator(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 17));
             runAfterAll(_resultCurrentRowId);
         }
     }
@@ -76,6 +77,14 @@ function LoadWeekly(_resultCurrentRowId) {
 
 
     /*functions*/
+    function _printTableTitle() {
+        _printDateByLang(2, "לוח אירועים שבועי", "#6d9eeb").setFontSize(36).setFontWeight("normal");
+        _printDateByLang(6, "Weekly Events Board", "#00ff00").setFontSize(36).setFontWeight("normal");
+        _printDateByLang(10, "Расписание на неделю", "#ffff00").setFontSize(36).setFontWeight("normal");
+        _printDateByLang(14, "LISTA DE EVENTOS SEMANALES", "#e06666").setFontSize(36).setFontWeight("normal");
+        resultSheet.setRowHeight(_resultCurrentRowId, 50);
+    }
+
     function _printDay(day) {
         _printDate(day.date);
         day.events.forEach(function (e) {
@@ -90,7 +99,7 @@ function LoadWeekly(_resultCurrentRowId) {
             _ptintEng(e);
             _ptintRus(e);
             _ptintEsp(e);
-            _separator(resultSheet.getRange(_resultCurrentRowId, 13, 1, 1));
+            _separator(resultSheet.getRange(_resultCurrentRowId, 17, 1, 1));
         });
     }
 
@@ -101,10 +110,10 @@ function LoadWeekly(_resultCurrentRowId) {
         var dateStr = Utilities.formatDate(date.date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd/MM");
 
         _printDateByLang(2, date.heb + " " + dateStr, "#cfe2f3");
-        _printDateByLang(5, date.eng + " " + dateStr, "#b6d7a8");
-        _printDateByLang(8, date.rus + " " + dateStr, "#ffe599");
-        _printDateByLang(11, date.esp + " " + dateStr, "#f4cccc");
-        _separator(resultSheet.getRange(_resultCurrentRowId, 13, 1, 1));
+        _printDateByLang(6, date.eng + " " + dateStr, "#b6d7a8");
+        _printDateByLang(10, date.rus + " " + dateStr, "#ffe599");
+        _printDateByLang(14, date.esp + " " + dateStr, "#f4cccc");
+        _separator(resultSheet.getRange(_resultCurrentRowId, 17, 1, 1));
     }
 
 
@@ -116,9 +125,10 @@ function LoadWeekly(_resultCurrentRowId) {
         range.setHorizontalAlignment("center");
         range.setValue(textLang);
 
-        resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 2).merge();
+        resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 3).merge();
 
         _separator(resultSheet.getRange(_resultCurrentRowId, colStartNum - 1, 1, 1));
+        return range;
     }
 
 
@@ -131,19 +141,19 @@ function LoadWeekly(_resultCurrentRowId) {
     function _ptintEng(e) {
         var timeStr = e.start + "-" + e.end;
         var textStr = e.eng;
-        _printEvent(timeStr, textStr, 5);
+        _printEvent(timeStr, textStr, 6);
     }
 
     function _ptintRus(e) {
         var timeStr = e.start + "-" + e.end;
         var textStr = e.rus;
-        _printEvent(timeStr, textStr, 8)
+        _printEvent(timeStr, textStr, 10)
     }
 
     function _ptintEsp(e) {
         var timeStr = e.start + "-" + e.end;
         var textStr = e.esp;
-        _printEvent(timeStr, textStr, 11)
+        _printEvent(timeStr, textStr, 14)
     }
 
     function _printEvent(timeStr, textStr, colStartNum, isHeb) {
@@ -153,27 +163,27 @@ function LoadWeekly(_resultCurrentRowId) {
 
         if (isHeb) {
             timeDir = "right"
-            textColNum = colStartNum + 1;
+            textColNum = colStartNum + 2;
             timeColNum = colStartNum;
         }
 
         var rangeText = resultSheet.getRange(_resultCurrentRowId, textColNum);
-        var rangeTime = resultSheet.getRange(_resultCurrentRowId, timeColNum);
+        var rangeTime = resultSheet.getRange(_resultCurrentRowId, timeColNum, 1, 2);
         rangeTime.setHorizontalAlignment(timeDir);
 
-        rangeTime.setValue(timeStr);
-        //rangeTime.setFontWeight("bold");
-        //rangeTime.setFontSize(12);
+        rangeTime.setValue(timeStr).merge();
+        rangeTime.setFontWeight("bold");
+        rangeTime.setFontSize(12);
 
         rangeText.setValue(textStr);
-        //rangeText.setFontSize(12);
-        //rangeText.setFontWeight("normal");
+        rangeText.setFontSize(12);
+        rangeText.setFontWeight("normal");
 
         _separator(resultSheet.getRange(_resultCurrentRowId, colStartNum - 1, 1, 1));
     }
 
     function _separator(range) {
-        range.setBackground("#cccccc");
+        range.clear().setBackground("#cccccc");
     }
 
 
