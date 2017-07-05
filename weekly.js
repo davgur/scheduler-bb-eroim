@@ -78,10 +78,10 @@ function LoadWeekly(_resultCurrentRowId) {
 
     /*functions*/
     function _printTableTitle() {
-        _printDateByLang(2, "לוח אירועים שבועי", "#6d9eeb").setFontSize(36).setFontWeight("normal");
-        _printDateByLang(6, "Weekly Events Board", "#00ff00").setFontSize(36).setFontWeight("normal");
-        _printDateByLang(10, "Расписание на неделю", "#ffff00").setFontSize(36).setFontWeight("normal");
-        _printDateByLang(14, "LISTA DE EVENTOS SEMANALES", "#e06666").setFontSize(36).setFontWeight("normal");
+        _printDateByLang(2, "לוח אירועים שבועי", "#6d9eeb").setFontSize(24).setFontWeight("bold");
+        _printDateByLang(6, "Weekly Events Board", "#00ff00").setFontSize(24).setFontWeight("bold");
+        _printDateByLang(10, "Расписание на неделю", "#ffff00").setFontSize(24).setFontWeight("bold");
+        _printDateByLang(14, "Lista de Eventos Semanales", "#e06666").setFontSize(24).setFontWeight("bold");
         resultSheet.setRowHeight(_resultCurrentRowId, 50);
     }
 

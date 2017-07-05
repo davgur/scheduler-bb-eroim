@@ -85,12 +85,16 @@ function LoadMonthly(_resultCurrentRowId) {
 
     function _printTableTitle() {
         _resultCurrentRowId++;
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 2, 1, 3), ['לוח אירועים שנתי 2017', '', ''], "#6d9eeb").setFontSize(36).setFontWeight("normal");
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 6, 1, 3), ["Annual Board of Events 2017", '', ''], "#00ff00").setFontSize(36).setFontWeight("normal");
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 10, 1, 3), ["Расписание событий на 2017 год", '', ''], "#ffff00").setFontSize(36).setFontWeight("normal");
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 14, 1, 3), ["TABLA ANUAL DE EVENTOS PARA 2017", '', ''], "#e06666").setFontSize(36).setFontWeight("normal");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 2, 1, 3), ['לוח אירועים שנתי 2017', '', ''], "#6d9eeb").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 6, 1, 3), ["Annual Board of Events 2017", '', ''], "#00ff00").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 10, 1, 3), ["Расписание событий на 2017 год", '', ''], "#ffff00").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 14, 1, 3), ["Tabla Anual de Eventos Para 2017", '', ''], "#e06666").setFontSize(24).setFontWeight("bold");
         resultSheet.setRowHeight(_resultCurrentRowId, 50);
 
+        _toBlack(resultSheet.getRange(_resultCurrentRowId, 5));
+        _toBlack(resultSheet.getRange(_resultCurrentRowId, 9));
+        _toBlack(resultSheet.getRange(_resultCurrentRowId, 13));
+        _toBlack(resultSheet.getRange(_resultCurrentRowId, 17));
         _toBlack(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 17));
         _resultCurrentRowId++;
     }
@@ -133,14 +137,15 @@ function LoadMonthly(_resultCurrentRowId) {
             if (!values[0]) {
                 return;
             }
-            _values[0] = Utilities.formatDate(values[0], Session.getScriptTimeZone(), "dd/MM/yyyy");
+            _values[0] = Utilities.formatDate(new Date(values[0]), "GMT+0400", "dd/MM/yyyy");
             _values[1] = values[1];
             _values[2] = values[2];
         } else {
             if (!values[2]) {
                 return;
             }
-            _values[2] = Utilities.formatDate(values[2], Session.getScriptTimeZone(), "dd/MM/yyyy");
+
+            _values[2] = Utilities.formatDate(new Date(values[2]), "GMT+0400", "dd/MM/yyyy");
             _values[1] = values[1];
             _values[0] = values[0];
         }
