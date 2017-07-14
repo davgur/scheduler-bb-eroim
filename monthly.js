@@ -8,29 +8,57 @@ function LoadMonthly(_resultCurrentRowId) {
     var _theDay = {};
     _resultCurrentRowId++;
 
-    var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG500').getValues();
+    var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG1000').getValues();
     dataValues = _filter(dataValues);
 
     return {
         run: run
-    }
+    };
 
     function _filter(arr) {
-        var _result = [];
-
-        _result = arr.filter(function (val, key) {
-            if (val[8] === 0 || (val[8] === 3 && val[2] > new Date())) {
-                return true;
+        var result = {yearsList: []}, data = [];
+        var _now = new Date();
+        data = arr.filter(function (val, key) {
+            if (key < 48) {
+                return false;
             }
-            return false;
-        });
-        _result = _result.filter(function (val, key, arr) {
+            var val8 = val[8];
+            if (val[8] !== 0 && val[8] !== 3) {
+                return false;
+            }
+            if (val[2] < _now) {
+                return false;
+            }
             if (val[8] === 0) {
                 return !!arr[key + 1] && arr[key + 1][8] !== 0;
             }
             return !!val[8];
         });
-        return _result;
+        data.sort(function (a, b) {
+            if (a[2] < b[2]) {
+                return -1;
+            }
+            if (a[2] > b[2]) {
+                return 1;
+            }
+            if (a[5] < b[5]) {
+                return -1;
+            }
+            if (a[5] > b[5]) {
+                return 1;
+            }
+            return 0;
+        })
+        data.forEach(function (val) {
+            var key = new Date(val[2]).getFullYear();
+            if (!result[key]) {
+                result[key] = [];
+                result.yearsList.push(key);
+            }
+            result[key].push(val);
+
+        });
+        return result;
     }
 
     function _defineAutoResize(colsId) {
@@ -40,8 +68,16 @@ function LoadMonthly(_resultCurrentRowId) {
     }
 
     function run() {
-        _printTableTitle()
-        dataValues.forEach(function (row, i) {
+        dataValues.yearsList.forEach(function (year) {
+            printYear(year, dataValues[year]);
+        });
+        resultSheet.getRange(_resultCurrentRowId + 1, 1, 50, 50).clear();
+        //_defineAutoResize([4,6, 10, 14]);
+    }
+
+    function printYear(year, data) {
+        _printTableTitle(year);
+        data.forEach(function (row, i) {
             _resultCurrentRowId++;
             if (row[8] === 0) {
                 //heb
@@ -74,23 +110,21 @@ function LoadMonthly(_resultCurrentRowId) {
             _toBlack(resultSheet.getRange(_resultCurrentRowId, 9));
             _toBlack(resultSheet.getRange(_resultCurrentRowId, 13));
             _toBlack(resultSheet.getRange(_resultCurrentRowId, 17));
-
-
         });
-        resultSheet.getRange(_resultCurrentRowId + 1, 1, 50, 50).clear();
-        _toBlack(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 17));
-        //_defineAutoResize([4,6, 10, 14]);
+        _resultCurrentRowId++;
+        _toBlack(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
     }
 
 
-    function _printTableTitle() {
+    function _printTableTitle(year) {
         _resultCurrentRowId++;
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 2, 1, 3), ['לוח אירועים שנתי 2017', '', ''], "#6d9eeb").setFontSize(24).setFontWeight("bold");
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 6, 1, 3), ["Annual Board of Events 2017", '', ''], "#00ff00").setFontSize(24).setFontWeight("bold");
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 10, 1, 3), ["Расписание событий на 2017 год", '', ''], "#ffff00").setFontSize(24).setFontWeight("bold");
-        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 14, 1, 3), ["Tabla Anual de Eventos Para 2017", '', ''], "#e06666").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 2, 1, 3), [' לוח אירועים שנתי' + year, '', ''], "#6d9eeb").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 6, 1, 3), ["Annual Board of Events " + year, '', ''], "#00ff00").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 10, 1, 3), ["Расписание событий на " + year + " год", '', ''], "#ffff00").setFontSize(24).setFontWeight("bold");
+        _formatMonth(resultSheet.getRange(_resultCurrentRowId, 14, 1, 3), ["Tabla Anual de Eventos Para " + year, '', ''], "#e06666").setFontSize(24).setFontWeight("bold");
         resultSheet.setRowHeight(_resultCurrentRowId, 50);
 
+        _toBlack(resultSheet.getRange(_resultCurrentRowId, 1));
         _toBlack(resultSheet.getRange(_resultCurrentRowId, 5));
         _toBlack(resultSheet.getRange(_resultCurrentRowId, 9));
         _toBlack(resultSheet.getRange(_resultCurrentRowId, 13));
