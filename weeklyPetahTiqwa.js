@@ -79,7 +79,7 @@ function LoadWeeklyPT() {
 
             _ptintHeb(e);
             _ptintRus(e);
-            _separator(resultSheet.getRange(_resultCurrentRowId, 2));
+            _separator(resultSheet.getRange(_resultCurrentRowId, 1));
             _separator(resultSheet.getRange(_resultCurrentRowId, 6));
             _separator(resultSheet.getRange(_resultCurrentRowId, 10));
         });
@@ -93,7 +93,7 @@ function LoadWeeklyPT() {
 
         _printDateByLang(2, date.heb + " " + dateStr, "#cfe2f3");
         _printDateByLang(7, date.rus + " " + dateStr, "#ffe599");
-        _separator(resultSheet.getRange(_resultCurrentRowId, 2));
+        _separator(resultSheet.getRange(_resultCurrentRowId, 1));
         _separator(resultSheet.getRange(_resultCurrentRowId, 6));
         _separator(resultSheet.getRange(_resultCurrentRowId, 10));
     }
