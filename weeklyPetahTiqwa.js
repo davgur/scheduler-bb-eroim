@@ -1,5 +1,7 @@
-var weekly = new LoadWeeklyPT();
-weekly.run();
+function runscript() {
+    var weekly = new LoadWeeklyPT();
+    weekly.run();
+}
 
 function LoadWeeklyPT() {
     var _resultCurrentRowId = 2;
@@ -7,25 +9,26 @@ function LoadWeeklyPT() {
     var resultSheet = ss.getSheetByName('board');
     var resultValues = resultSheet.getDataRange().getValues();
 
+    var titleValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("titles").getRange('A2:F100').getValues();
     var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG700').getValues();
     dataValues = _filter(dataValues).map(function (row) {
         return _parseEvent(row);
     });
-    dataValues = _sort(dataValues);
-    dataValues = _insertTitles(dataValues);
-    dataValues = _sort(dataValues);
+    dataValues = _parseTitles(titleValues).concat(dataValues).sort(_sort);
 
     return {
         run: function () {
             resultSheet.getRange(3, 1, 200, 15).clear().setFontSize(12);
             dataValues.forEach(function (obj, key, arr) {
-                if (key === 0 || obj.date !== arr[key - 1].date) {
-                    _printDay(obj);
+                _resultCurrentRowId++;
+                if (key === 0 || obj.date != arr[key - 1].date) {
+                    _printDate(obj);
+                    _resultCurrentRowId++;
                 }
                 if (obj.isTitle) {
-                    _parseTitle(obj);
+                    _printTitle(obj);
                 } else {
-                    _parseEvent(obj);
+                    _printEvent(obj);
                 }
             });
             _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 11));
@@ -45,8 +48,6 @@ function LoadWeeklyPT() {
             return true;
         });
     }
-        return _result;
-    }
 
     function _sort(a, b) {
         if (a.date < b.date) {
@@ -62,21 +63,20 @@ function LoadWeeklyPT() {
             return 1;
         }
         return 0;
-    function _insertTitles(arr) {
-
     }
 
-    function _sort(arr) {
-        arr.sort(function (a, b) {
-            if (a[2] < b[2]) {
-                return -1;
-            }
-            if (a[2] > b[2]) {
-                return 1;
-            }
-            return 0;
+    function _parseTitles(arr) {
+        return arr.map(function (row) {
+            return {
+                isTitle: true,
+                heb: row[2],
+                rus: row[3],
+                start: row[1],
+                date: row[0]
+            };
+        }).filter(function (t) {
+            return t.date;
         });
-        return arr;
     }
 
     function _getWeekBoards() {
@@ -89,20 +89,15 @@ function LoadWeeklyPT() {
 
 
     /*functions*/
+    function _printTitle(title) {
 
-    function _printDay(day) {
-        _printDate(day.date);
-        day.events.forEach(function (e) {
-            if (!e.start && !e.end) {
-                return;
-            }
-            _resultCurrentRowId++;
-            resultSheet.setRowHeight(_resultCurrentRowId, 24);
+    }
 
-            _ptintHeb(e);
-            _ptintRus(e);
-            _printRowSeparators()
-        });
+    function _printEvent(e) {
+        resultSheet.setRowHeight(_resultCurrentRowId, 24);
+        _ptintHeb(e);
+        _ptintRus(e);
+        _printRowSeparators();
     }
 
     function _printDate(date) {
@@ -148,15 +143,6 @@ function LoadWeeklyPT() {
         }
     }
 
-
-    function _parseDate(row) {
-        return {
-            date: row[2],
-            heb: row[3],
-            rus: row[22]
-        };
-    }
-
     function _parseEvent(row) {
         var _placeHeb = row[7].split('|@|');
         var _placeRus = row[18].split('|@|');
@@ -172,7 +158,8 @@ function LoadWeeklyPT() {
                 womanPlace: _placeRus[1]
             },
             start: row[5],
-            end: row[6]
+            end: row[6],
+            date: row[2]
         };
     }
 
