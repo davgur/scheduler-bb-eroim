@@ -8,7 +8,7 @@ function LoadWeekly(_resultCurrentRowId) {
     var _theDay = {};
 
 
-    var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG700').getValues();
+    var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG1000').getValues();
     dataValues = _filter(dataValues);
     return {
         run: function (runAfterAll) {
@@ -54,6 +54,12 @@ function LoadWeekly(_resultCurrentRowId) {
                 return -1;
             }
             if (a[2] > b[2]) {
+                return 1;
+            }
+            if (a[5] < b[5]) {
+                return -1;
+            }
+            if (a[5] > b[5]) {
                 return 1;
             }
             return 0;
