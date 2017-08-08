@@ -10,6 +10,8 @@ function LoadWeeklyPT() {
 
     var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG700').getValues();
     dataValues = _filter(dataValues);
+    dataValues = _insertTitles(dataValues);
+    dataValues = _sort(dataValues);
 
     return {
         run: function () {
@@ -43,8 +45,15 @@ function LoadWeeklyPT() {
             }
             return true;
         });
+        return _result;
+    }
 
-        _result.sort(function (a, b) {
+    function _insertTitles(arr) {
+
+    }
+
+    function _sort(arr) {
+        arr.sort(function (a, b) {
             if (a[2] < b[2]) {
                 return -1;
             }
@@ -53,7 +62,7 @@ function LoadWeeklyPT() {
             }
             return 0;
         });
-        return _result;
+        return arr;
     }
 
     function _getWeekBoards() {
