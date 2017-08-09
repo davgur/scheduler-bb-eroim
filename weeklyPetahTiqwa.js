@@ -7,9 +7,9 @@ function LoadWeeklyPT() {
     var _resultCurrentRowId = 2;
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var resultSheet = ss.getSheetByName('board');
-    var resultValues = resultSheet.getDataRange().getValues();
+    var titleValues = ss.getSheetByName("titles").getRange('A2:F100');
+    var _weekDays = SpreadsheetApp.openById("1B76zdIX2p48FEA1fvJr36DHKsQaIODQT9kWUZ8n0c7o").getSheetByName("config").getRange(3, 6, 7, 4).getValues();
 
-    var titleValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("titles").getRange('A2:F100').getValues();
     var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG700').getValues();
     dataValues = _filter(dataValues).map(function (row) {
         return _parseEvent(row);
@@ -21,7 +21,7 @@ function LoadWeeklyPT() {
             resultSheet.getRange(3, 1, 200, 15).clear().setFontSize(12);
             dataValues.forEach(function (obj, key, arr) {
                 _resultCurrentRowId++;
-                if (key === 0 || obj.date != arr[key - 1].date) {
+                if (key === 0 || obj.date.getTime() != arr[key - 1].date.getTime()) {
                     _printDate(obj);
                     _resultCurrentRowId++;
                 }
@@ -65,16 +65,22 @@ function LoadWeeklyPT() {
         return 0;
     }
 
-    function _parseTitles(arr) {
-        return arr.map(function (row) {
-            return {
+    function _parseTitles(range) {
+        var numRows = range.getNumRows();
+        var arr = [];
+        for (i = 1; i < numRows; i++) {
+            var data = {
                 isTitle: true,
-                heb: row[2],
-                rus: row[3],
-                start: row[1],
-                date: row[0]
+                heb: range.getCell(i, 3).getValue(),
+                rus: range.getCell(i, 4).getValue(),
+                start: range.getCell(i, 2).getValue(),
+                date: range.getCell(i, 1).getValue(),
+                range: range.getCell(i, 3)
             };
-        }).filter(function (t) {
+            arr.push(data);
+
+        }
+        return arr.filter(function (t) {
             return t.date;
         });
     }
@@ -89,8 +95,18 @@ function LoadWeeklyPT() {
 
 
     /*functions*/
-    function _printTitle(title) {
+    function _printTitle(date) {
+        resultSheet.setRowHeight(_resultCurrentRowId, 28);
+        var hebRange = resultSheet.getRange(_resultCurrentRowId, 2, 1, 4);
+        var rusRange = resultSheet.getRange(_resultCurrentRowId, 7, 1, 4);
 
+        date.range.copyTo(hebRange, {formatOnly: true});
+        date.range.copyTo(rusRange, {formatOnly: true});
+
+        hebRange.merge().setValue(date.heb);
+        rusRange.merge().setValue(date.rus);
+
+        _printRowSeparators();
     }
 
     function _printEvent(e) {
@@ -99,27 +115,6 @@ function LoadWeeklyPT() {
         _ptintRus(e);
         _printRowSeparators();
     }
-
-    function _printDate(date) {
-        _resultCurrentRowId++;
-        resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
-        resultSheet.setRowHeight(_resultCurrentRowId, 28);
-        var dateStr = Utilities.formatDate(date.date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd/MM");
-
-        _printDateByLang(2, date.heb + " " + dateStr, "#cfe2f3");
-        _printDateByLang(7, date.rus + " " + dateStr, "#ffe599");
-        _printRowSeparators();
-    }
-
-
-    function _printDateByLang(colStartNum, textLang, bgColor) {
-        var range = resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 1);
-        range.setBackground(bgColor).setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setValue(textLang);
-        resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 4).merge();
-        _separator(resultSheet.getRange(_resultCurrentRowId, colStartNum - 1, 1, 1));
-        return range;
-    }
-
 
     function _ptintHeb(e) {
         resultSheet.getRange(_resultCurrentRowId, 2).setValue(e.heb.name);
@@ -142,6 +137,24 @@ function LoadWeeklyPT() {
             resultSheet.getRange(_resultCurrentRowId, 7, 1, 2).merge().setHorizontalAlignment("center");
         }
     }
+
+    function _printDate(date) {
+        resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
+        resultSheet.setRowHeight(_resultCurrentRowId, 28);
+
+        _printDateByLang(2, 0, date.date, "#cfe2f3");
+        _printDateByLang(7, 2, date.date, "#ffe599");
+        _printRowSeparators();
+    }
+
+
+    function _printDateByLang(colStartNum, langIndex, date, bgColor) {
+        var dateStr = Utilities.formatDate(date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd/MM") + ' ' + _weekDays[date.getDay()][langIndex];
+        var range = resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setValue(dateStr);
+        _separator(resultSheet.getRange(_resultCurrentRowId, colStartNum - 1, 1, 1));
+        return range;
+    }
+
 
     function _parseEvent(row) {
         var _placeHeb = row[7].split('|@|');
