@@ -18,8 +18,8 @@ function LoadWeeklyPT() {
 
     return {
         run: function () {
-            resultSheet.getRange(3, 1, 200, 15).clear().setFontSize(12);
             dataValues.forEach(function (obj, key, arr) {
+                resultSheet.getRange(_resultCurrentRowId, 1, 20, 1).clear().setFontSize(12).setHorizontalAlignment("center");
                 _resultCurrentRowId++;
                 if (key === 0 || obj.date.getTime() != arr[key - 1].date.getTime()) {
                     _printDate(obj);
@@ -123,18 +123,18 @@ function LoadWeeklyPT() {
         if (e.heb.womanPlace) {
             resultSheet.getRange(_resultCurrentRowId, 5).setValue(e.heb.womanPlace);
         } else {
-            resultSheet.getRange(_resultCurrentRowId, 4, 1, 2).merge().setHorizontalAlignment("center");
+            resultSheet.getRange(_resultCurrentRowId, 4, 1, 2).merge();
         }
     }
 
     function _ptintRus(e) {
-        resultSheet.getRange(_resultCurrentRowId, 10).setValue(e.heb.name);
+        resultSheet.getRange(_resultCurrentRowId, 10).setValue(e.rus.name);
         resultSheet.getRange(_resultCurrentRowId, 9).setValue(e.start + "-" + e.end);
-        resultSheet.getRange(_resultCurrentRowId, 8).setValue(e.heb.manPlace);
-        if (e.heb.womanPlace) {
-            resultSheet.getRange(_resultCurrentRowId, 7).setValue(e.heb.womanPlace);
+        resultSheet.getRange(_resultCurrentRowId, 8).setValue(e.rus.manPlace);
+        if (e.rus.womanPlace) {
+            resultSheet.getRange(_resultCurrentRowId, 7).setValue(e.rus.womanPlace);
         } else {
-            resultSheet.getRange(_resultCurrentRowId, 7, 1, 2).merge().setHorizontalAlignment("center");
+            resultSheet.getRange(_resultCurrentRowId, 7, 1, 2).merge();
         }
     }
 
@@ -150,7 +150,7 @@ function LoadWeeklyPT() {
 
     function _printDateByLang(colStartNum, langIndex, date, bgColor) {
         var dateStr = Utilities.formatDate(date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd/MM") + ' ' + _weekDays[date.getDay()][langIndex];
-        var range = resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setValue(dateStr);
+        var range = resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight("bold").setValue(dateStr).setHorizontalAlignment("center");
         _separator(resultSheet.getRange(_resultCurrentRowId, colStartNum - 1, 1, 1));
         return range;
     }
