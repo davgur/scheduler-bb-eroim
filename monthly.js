@@ -3,7 +3,7 @@
 
 function LoadMonthly(_resultCurrentRowId) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var resultSheet = ss.getSheetByName('board');
+    var resultSheet = ss.getSheetByName('test');
     var configsSheet = ss.getSheetByName('config');
     _resultCurrentRowId++;
 
