@@ -3,11 +3,11 @@
 
 function LoadMonthly(_resultCurrentRowId) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var resultSheet = ss.getSheetByName('board');
+    var resultSheet = ss.getSheetByName('test');
     var configsSheet = ss.getSheetByName('config');
     _resultCurrentRowId++;
 
-    var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG1000').getValues();
+    var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A2:AG1500').getValues();
     dataValues = _filter(dataValues);
 
     return {
@@ -18,29 +18,27 @@ function LoadMonthly(_resultCurrentRowId) {
         var result = {yearsList: []}, data = [];
         var _now = new Date();
         arr.filter(function (val, key) {
-            if (val[8] !== 3 || val[2] < _now) {
-                return false;
-            }
-            if (val[8] === 0) {
-                return !!arr[key + 1] && arr[key + 1][8] !== 0;
-            }
-            return !!val[8];
+            return val[5] == 3 && val[0] >= _now;
         }).sort(function (a, b) {
-            if (a[2] < b[2]) {
+            var a2Num = new Number(a[0]);
+            var b2Num = new Number(b[0]);
+            var a5Num = new Number(a[1].split(':')[0]);
+            var b5Num = new Number(b[1].split(':')[0]);
+            if (a2Num < b2Num) {
                 return -1;
             }
-            if (a[2] > b[2]) {
+            if (a2Num > b2Num) {
                 return 1;
             }
-            if (a[5] < b[5]) {
+            if (a5Num < a5Num) {
                 return -1;
             }
-            if (a[5] > b[5]) {
+            if (a5Num > a5Num) {
                 return 1;
             }
             return 0;
         }).forEach(function (val) {
-            var key = new Date(val[2]).getFullYear();
+            var key = new Date(val[0]).getFullYear();
             if (!result[key]) {
                 result[key] = [];
                 result.yearsList.push(key);
@@ -93,8 +91,8 @@ function LoadMonthly(_resultCurrentRowId) {
     function _printTableTitle(year) {
         _resultCurrentRowId++;
         var hebText = 'לוח אירועים שנתי ';
-        var rusText = "Annual Board of Events ";
-        var engText = "Расписание событий на ";
+        var engText = "Annual Board of Events ";
+        var rusText = "Расписание событий на ";
         var espText = "Tabla Anual de Eventos Para ";
 
         //heb
@@ -139,7 +137,7 @@ function LoadMonthly(_resultCurrentRowId) {
         _values[0] = value;
         if (langIndex === 0) {
             _values.reverse();
-            resultSheet.getRange(_resultCurrentRowId, startIndex - 1, 1, 2).setFontWeight("bold");
+            resultSheet.getRange(_resultCurrentRowId, startIndex, 1, 2).setFontWeight("bold");
         } else {
             resultSheet.getRange(_resultCurrentRowId, startIndex + 1, 1, 2).setFontWeight("bold");
         }
@@ -149,12 +147,12 @@ function LoadMonthly(_resultCurrentRowId) {
 
     function rowToObject(row) {
         return {
-            date: row[2],
-            weekDay: row[2].getDay(),
-            rus: row[21],
-            heb: row[4],
-            eng: row[13],
-            esp: row[29]
+            date: row[0],
+            weekDay: row[0].getDay(),
+            heb: row[3],
+            eng: row[8],
+            rus: row[11],
+            esp: row[14]
         };
     }
 

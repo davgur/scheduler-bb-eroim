@@ -3,9 +3,10 @@
 
 function LoadWeekly(_resultCurrentRowId) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var resultSheet = ss.getSheetByName('board');
-    var resultValues = resultSheet.getDataRange().getValues();
+    var resultSheet = ss.getSheetByName('test');
+    var configsSheet = ss.getSheetByName('config');
     var _theDay = {};
+    var _weekDays = configsSheet.getRange(3, 6, 7, 4).getValues();
 
 
     var dataValues = SpreadsheetApp.openById("1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ").getSheetByName("Sheet1").getRange('A3:AG1000').getValues();
@@ -15,7 +16,7 @@ function LoadWeekly(_resultCurrentRowId) {
             _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
             _printTableTitle()
             dataValues.forEach(function (row, key) {
-                if (!!_theDay.date && _theDay.date.date.getTime() != row[2].getTime()) {
+                if (_theDay.date && row[0] && _theDay.date.date.getTime() != row[0].getTime()) {
                     _printDay(_theDay);
                     _theDay = {};
                 }
@@ -32,15 +33,13 @@ function LoadWeekly(_resultCurrentRowId) {
 
     function _filter(arr) {
         var the_week = _getToWeek();
-        var _result = [];
-
-        _result = arr.filter(function (val, key) {
-            if (val[8] !== 2) {
+        var _result = arr.filter(function (val, key) {
+            if (val[5] != 2) {
                 return false;
             }
             var the_week_end = parseInt(Utilities.formatDate(new Date(the_week.end), "EST", "D"));
             var the_week_start = parseInt(Utilities.formatDate(new Date(the_week.start), "EST", "D"));
-            var _theDay = parseInt(Utilities.formatDate(new Date(val[2]), "EST", "D"));
+            var _theDay = parseInt(Utilities.formatDate(new Date(val[0]), "EST", "D"));
 
             if (_theDay > the_week_end || _theDay < the_week_start) {
                 return false;
@@ -49,21 +48,7 @@ function LoadWeekly(_resultCurrentRowId) {
             return true;
         });
 
-        _result.sort(function (a, b) {
-            if (a[2] < b[2]) {
-                return -1;
-            }
-            if (a[2] > b[2]) {
-                return 1;
-            }
-            if (a[5] < b[5]) {
-                return -1;
-            }
-            if (a[5] > b[5]) {
-                return 1;
-            }
-            return 0;
-        });
+        _result.sort(_equalTime);
         the_week.end.setDate(the_week.end.getDate() + 2);
         _result.push([null, null, the_week.end]);
         return _result;
@@ -109,16 +94,19 @@ function LoadWeekly(_resultCurrentRowId) {
         });
     }
 
-    function _printDate(date) {
+    function _printDate(data) {
         _resultCurrentRowId++;
         resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
         resultSheet.setRowHeight(_resultCurrentRowId, 28);
-        var dateStr = Utilities.formatDate(date.date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd/MM");
-
-        _printDateByLang(2, date.heb + " " + dateStr, "#cfe2f3");
-        _printDateByLang(6, date.eng + " " + dateStr, "#b6d7a8");
-        _printDateByLang(10, date.rus + " " + dateStr, "#ffe599");
-        _printDateByLang(14, date.esp + " " + dateStr, "#f4cccc");
+        var dateStr = Utilities.formatDate(data.date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), "dd/MM");
+        //heb
+        _printDateByLang(2, _weekDays[data.weekDay][0] + " " + dateStr, "#cfe2f3");
+        //english
+        _printDateByLang(6, _weekDays[data.weekDay][1] + " " + dateStr, "#b6d7a8");
+        //rus
+        _printDateByLang(10, _weekDays[data.weekDay][2] + " " + dateStr, "#ffe599");
+        //esp
+        _printDateByLang(14, _weekDays[data.weekDay][3] + " " + dateStr, "#f4cccc");
         _separator(resultSheet.getRange(_resultCurrentRowId, 17, 1, 1));
     }
 
@@ -195,22 +183,43 @@ function LoadWeekly(_resultCurrentRowId) {
 
     function _parseDate(row) {
         return {
-            date: row[2],
+            weekDay: row[0].getDay(),
+            date: row[0],
             heb: row[3],
-            eng: row[14],
-            rus: row[22],
-            esp: row[30]
+            eng: row[8],
+            rus: row[11],
+            esp: row[14]
         };
     }
 
     function _parseEvent(row) {
         return {
-            heb: row[4],
-            eng: row[13],
-            rus: row[21],
-            esp: row[29],
-            start: row[5],
-            end: row[6]
+            heb: row[3],
+            eng: row[8],
+            rus: row[11],
+            esp: row[14],
+            start: row[1],
+            end: row[2]
         };
+    }
+
+    function _equalTime(a, b) {
+        var a2Num = new Number(a[0]);
+        var b2Num = new Number(b[0]);
+        var a5Num = new Number(a[1].split(':')[0]);
+        var b5Num = new Number(b[1].split(':')[0]);
+        if (a2Num < b2Num) {
+            return -1;
+        }
+        if (a2Num > b2Num) {
+            return 1;
+        }
+        if (a5Num < a5Num) {
+            return -1;
+        }
+        if (a5Num > a5Num) {
+            return 1;
+        }
+        return 0;
     }
 }
