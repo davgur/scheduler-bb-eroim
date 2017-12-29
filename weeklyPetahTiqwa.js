@@ -10,7 +10,7 @@ function LoadWeeklyPT() {
   var titleValues         = ss.getSheetByName('titles').getRange('A2:F100');
   var _weekDays           = SpreadsheetApp.openById('1B76zdIX2p48FEA1fvJr36DHKsQaIODQT9kWUZ8n0c7o').getSheetByName('config').getRange(3, 6, 7, 4).getValues();
 
-  var dataValues = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A3:AG700').getValues();
+  var dataValues = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A3:AG1500').getValues();
   dataValues     = _filter(dataValues).map(function (row) {
     return _parseEvent(row);
   });
@@ -41,14 +41,18 @@ function LoadWeeklyPT() {
   function _filter(arr) {
     var the_week = _getWeekBoards();
     return arr.filter(function (val, key) {
-      if (val[8] !== 2) {
+      if (key < 140) {
+        return;
+      }
+      if (val[5] != 2 && val[5] !== new Number(1)) {
         return false;
       }
       var _theDay = _dateToNumber(val[2]);
-      if (_theDay > the_week.end || _theDay < the_week.start) {
-        return false;
+
+      if (the_week.start > the_week.end) {
+        return _theDay < the_week.end || _theDay > the_week.start;
       }
-      return true;
+      return _theDay < the_week.end && _theDay > the_week.start;
     });
   }
 
@@ -89,10 +93,14 @@ function LoadWeeklyPT() {
   }
 
   function _getWeekBoards() {
-    var _now   = new Date();
-    //start from sunday
-    var _start = new Date(_now.getYear(), _now.getMonth(), _now.getDate());
-    var _end   = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + (7 - _now.getDay()));
+    var _start, _end;
+    var THE_DAY = 1;
+    var _now    = new Date();
+    var delta   = THE_DAY - _now.getDay();
+    delta       = (delta < 0) ? 6 + delta : delta;
+
+    _end   = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta + 30);
+    _start = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta - 7);
     return { start: _dateToNumber(_start), end: _dateToNumber(_end) };
   }
 
@@ -146,29 +154,31 @@ function LoadWeeklyPT() {
   }
 
   function _printDateByLang(colStartNum, langIndex, date, bgColor) {
-    var dateStr = Utilities.formatString('%s %s', Utilities.formatDate(date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 'dd/MM'), _weekDays[date.getDay()][langIndex]);
-    var range   = resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight('bold').setValue(dateStr.toString()).setHorizontalAlignment('center');
+
+    var _weekDays_1 = _weekDays[date.getDay()][langIndex];
+    var dateStr     = Utilities.formatString('%s %s', Utilities.formatDate(date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 'dd/MM'), _weekDays[date.getDay()][langIndex]);
+    var range       = resultSheet.getRange(_resultCurrentRowId, colStartNum, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight('bold').setValue(dateStr.toString()).setHorizontalAlignment('center');
     _separator(resultSheet.getRange(_resultCurrentRowId, colStartNum - 1, 1, 1));
     return range;
   }
 
   function _parseEvent(row) {
-    var _placeHeb = row[7].split('|@|');
-    var _placeRus = row[18].split('|@|');
+    var _placeHeb = row[4].split('|@|');
+    var _placeRus = row[10].split('|@|');
     return {
       heb: {
-        name: row[4],
+        name: row[3],
         manPlace: _placeHeb[0],
         womanPlace: _placeHeb[1]
       },
       rus: {
-        name: row[21],
+        name: row[11],
         manPlace: _placeRus[0],
         womanPlace: _placeRus[1]
       },
-      start: row[5],
-      end: row[6],
-      date: row[2]
+      start: row[1],
+      end: row[2],
+      date: row[0]
     };
   }
 

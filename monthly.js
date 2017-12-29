@@ -30,10 +30,10 @@ function LoadMonthly(_resultCurrentRowId) {
       if (a2Num > b2Num) {
         return 1;
       }
-      if (a5Num < a5Num) {
+      if (a5Num < b5Num) {
         return -1;
       }
-      if (a5Num > a5Num) {
+      if (a5Num > b5Num) {
         return 1;
       }
       return 0;
