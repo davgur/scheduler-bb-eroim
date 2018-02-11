@@ -123,6 +123,12 @@ function LoadWeeklyPT() {
     }
 
     function _getWeekBoards() {
+        var _now = new Date();
+        _end = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + 7);
+        return {start: _dateToNumber(_now), end: _dateToNumber(_end)};
+    }
+
+    function _getWeekBoardsByWeekDay() {
         var _start, _end;
         var THE_DAY = 1;
         var _now = new Date();
