@@ -7,8 +7,10 @@ function LoadMonthly(_resultCurrentRowId) {
   var configsSheet = ss.getSheetByName('config');
   _resultCurrentRowId++;
 
-  var dataValues = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A2:AG1500').getValues();
-  dataValues     = _filter(dataValues);
+  var dataValues2018 = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A2:AG3000').getValues();
+  var dataValues2019 = SpreadsheetApp.openById('1HFI4KlEY72xfuEfzvYqYZ_gEKAAwiQ6aBRa3kWc44iY').getSheetByName('Sheet1').getRange('A2:O1500').getValues();
+  var dataValues     = _filter([].concat(dataValues2018, dataValues2019));
+
 
   return {
     run: run
@@ -18,7 +20,7 @@ function LoadMonthly(_resultCurrentRowId) {
     var result = { yearsList: [] }, data = [];
     var _now   = new Date();
     arr.filter(function (val, key) {
-      return val[5] == 3 && val[0] >= _now;
+      return (val[5] == 3) && val[0] >= _now;
     }).sort(function (a, b) {
       var a2Num = new Number(a[0]);
       var b2Num = new Number(b[0]);
@@ -30,10 +32,10 @@ function LoadMonthly(_resultCurrentRowId) {
       if (a2Num > b2Num) {
         return 1;
       }
-      if (a5Num < b5Num) {
+      if (a5Num < a5Num) {
         return -1;
       }
-      if (a5Num > b5Num) {
+      if (a5Num > a5Num) {
         return 1;
       }
       return 0;
