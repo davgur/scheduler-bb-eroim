@@ -15,27 +15,30 @@ function BuilderFromToPT() {
     rus: { color: '#ffff00', text: configurations[2] },
   };
   var dataValues          = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A3:AG3000').getValues();
-  dataValues              = _filter(dataValues);
-  dataValues              = dataValues.map(function (row) {
+  dataValues              = _filter(dataValues).map(function (row) {
     return _parseEvent(row);
   });
-  dataValues              = _filterObjects(_parseTitles(titleValues)).concat(dataValues).sort(_sort);
+  dataValues.sort(_sort);
   dataValues.push({});
   return {
     run: function () {
       clearRange(resultSheet.getRange(1, 1, 1000, 6));
       _printMainTitles(_resultCurrentRowId, 'heb');
+
       dataValues.forEach(function (obj, key, arr) {
+
         _resultCurrentRowId++;
         if (!obj.date) {
           _printRowSeparators();
           return;
         }
+
         if (key === 0 || obj.date.getTime() != arr[key - 1].date.getTime()) {
           _printDateHeb(obj);
           _printRowSeparators();
           _resultCurrentRowId++;
         }
+
         clearRange(resultSheet.getRange(_resultCurrentRowId, 1, 1, 6)).setFontSize(12).setHorizontalAlignment('center');
         if (obj.isTitle) {
           var range = resultSheet.getRange(_resultCurrentRowId, 2, 1, 4);
@@ -54,17 +57,20 @@ function BuilderFromToPT() {
       });
 
       _printMainTitles(_resultCurrentRowId, 'rus');
+
       dataValues.forEach(function (obj, key, arr) {
         _resultCurrentRowId++;
         if (!obj.date) {
           _printRowSeparators();
           return;
         }
+
         if (key === 0 || obj.date.getTime() != arr[key - 1].date.getTime()) {
           _printDateRus(obj);
           _printRowSeparators();
           _resultCurrentRowId++;
         }
+
         clearRange(resultSheet.getRange(_resultCurrentRowId, 1, 1, 6)).setFontSize(12).setHorizontalAlignment('center');
         if (obj.isTitle) {
           var range = resultSheet.getRange(_resultCurrentRowId, 2, 1, 4);
@@ -81,6 +87,7 @@ function BuilderFromToPT() {
         }
         _printRowSeparators();
       });
+
       clearRange(resultSheet.getRange(_resultCurrentRowId, 1, 50, 6));
       _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 6));
     }
@@ -89,19 +96,12 @@ function BuilderFromToPT() {
   function _filter(arr) {
     var the_week = _getWeekBoards();
     return arr.filter(function (val, key) {
-      if (val[5] != 2 && parseInt(val[5]) !== 1) {
+      if (!(val[5] == 2 || parseInt(val[5]) === 1 || val[5] == 6)) {
         return false;
       }
+
       var _theDay = new Date(val[0]);
-
       return _theDay <= the_week.end && _theDay > the_week.start;
-    });
-  }
-
-  function _filterObjects(arr) {
-    var the_week = _getWeekBoards();
-    return arr.filter(function (val, key) {
-      return val.date <= the_week.end && val.date > the_week.start;
     });
   }
 
@@ -121,49 +121,10 @@ function BuilderFromToPT() {
     return 0;
   }
 
-  function _parseTitles(range) {
-    var numRows = range.getNumRows();
-    var _values = range.getValues();
-    var arr     = [];
-    for (var i = 0; i < numRows; i++) {
-      var _value = _values[i];
-      var _data;
-      if (_value[12].toLowerCase() !== 'v') {
-        _data = _parseEvent(_value);
-      } else {
-        _data = {
-          isMarged: true,
-          heb: _value[3],
-          rus: _value[11],
-          start: _value[1],
-          date: _value[0],
-        };
-      }
-      _data.isTitle = true;
-      _data.style   = range.getCell(i + 1, 1);
-      arr.push(_data);
-    }
-    return arr.filter(function (t) {
-      return t.date;
-    });
-  }
-
   function _getWeekBoards() {
     var start = new Date(configurations[0]);
     var end   = new Date(configurations[1]);
     return { start: start, end: end };
-  }
-
-  function _getWeekBoardsByWeekDay() {
-    var _start, _end;
-    var THE_DAY = 1;
-    var _now    = new Date();
-    var delta   = THE_DAY - _now.getDay();
-    delta       = (delta < 0) ? 6 + delta : delta;
-
-    _end   = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta);
-    _start = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta - 7);
-    return { start: _dateToNumber(_start), end: _dateToNumber(_end) };
   }
 
   /*functions*/
@@ -240,9 +201,6 @@ function BuilderFromToPT() {
   }
 
   function _parseEvent(row) {
-    if (row[4].search('_IS_JSON_') !== -1) {
-      return _parseEventFromJSON(row);
-    }
     var _placeHeb = row[4].split('|@|');
     var _placeRus = row[10].split('|@|');
     return {
@@ -260,32 +218,6 @@ function BuilderFromToPT() {
       end: row[2],
       date: row[0]
     };
-  }
-
-  function _parseEventFromJSON(row) {
-
-    var _jsonHeb = JSON.parse(row[4].split('_IS_JSON_')[1]);
-    var _jsonRus = JSON.parse(row[10].split('_IS_JSON_')[1]);
-    return {
-      heb: {
-        name: row[3],
-        manPlace: _jsonHeb.manPlace,
-        womanPlace: _jsonHeb.womanPlace
-      },
-      rus: {
-        name: row[11],
-        manPlace: _jsonRus.manPlace,
-        womanPlace: _jsonRus.womanPlace
-      },
-      titleParams: _jsonHeb.titleParams,
-      start: row[1],
-      end: row[2],
-      date: row[0]
-    };
-  }
-
-  function _dateToNumber(d) {
-    return parseInt(Utilities.formatDate(new Date(d), 'EST', 'D'));
   }
 
   function _printRowSeparators() {
