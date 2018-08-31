@@ -1,20 +1,29 @@
-//var weekly = new LoadWeekly(1);
-//weekly.run();
+function runscript() {
+  var weekly = new BuilderFromTo();
+  weekly.run();
+}
 
-function LoadWeekly(_resultCurrentRowId) {
-  var ss           = SpreadsheetApp.getActiveSpreadsheet();
-  var resultSheet  = ss.getSheetByName('board');
-  var configsSheet = ss.getSheetByName('config');
-  var _theDay      = {};
-  var _weekDays    = configsSheet.getRange(3, 6, 7, 4).getValues();
+function BuilderFromTo() {
+  _resultCurrentRowId = 1;
+  var ss              = SpreadsheetApp.getActiveSpreadsheet();
+  var resultSheet     = ss.getSheetByName('fromTo');
+  var configurations  = ss.getSheetByName('config').getRange('B2:B100').getValues();
+  var _theDay         = {};
+  var _weekDays       = SpreadsheetApp.openById('1B76zdIX2p48FEA1fvJr36DHKsQaIODQT9kWUZ8n0c7o').getSheetByName('config').getRange(3, 6, 7, 4).getValues();
 
-  var dataValues = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A3:AG1000').getValues();
+  var dataValues = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A3:AG3000').getValues();
   dataValues     = _filter(dataValues);
+  dataValues.push({ isLast: true });
   return {
-    run: function (runAfterAll) {
+    run: function () {
+      clearRange(resultSheet.getRange(1, 1, 1000, 17));
       _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
       _printTableTitle();
       dataValues.forEach(function (row, key) {
+        if (row.isLast) {
+          _printDay(_theDay);
+          return;
+        }
         if (_theDay.date && row[0] && _theDay.date.date.getTime() != row[0].getTime()) {
           _printDay(_theDay);
           _theDay = {};
@@ -23,54 +32,59 @@ function LoadWeekly(_resultCurrentRowId) {
           _theDay.date   = _parseDate(row);
           _theDay.events = [];
         }
-        _theDay.events.push(_parseEvent(row));
+        var _event = row[5] == 6 ? _parseTitle(row) : _parseEvent(row);
+        _theDay.events.push(_event);
       });
       _separator(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 17));
-      runAfterAll(_resultCurrentRowId);
     }
   };
 
   function _filter(arr) {
     var the_week = _getToWeek();
     var _result  = arr.filter(function (val) {
-      if (val[5] != 2) {
+      if (!(val[5] == 2 || val[5] == 3.1 || val[5] == 6)) {
         return false;
       }
-      var the_week_end   = parseInt(Utilities.formatDate(new Date(the_week.end), 'EST', 'D'));
-      var the_week_start = parseInt(Utilities.formatDate(new Date(the_week.start), 'EST', 'D'));
-      var _theDay        = parseInt(Utilities.formatDate(new Date(val[0]), 'EST', 'D'));
+      var _theDay = new Date(val[0]);
+      var end     = the_week.end;
+      var start   = the_week.start;
 
-      if (the_week_start > the_week_end) {
-        return _theDay < the_week_end || _theDay > the_week_start;
-      }
-      return _theDay < the_week_end && _theDay > the_week_start;
+      return _theDay <= the_week.end && _theDay > the_week.start;
     });
 
     _result.sort(_equalTime);
-    the_week.end.setDate(the_week.end.getDate() + 2);
-    _result.push([the_week.end]);
     return _result;
   }
 
   function _getToWeek() {
-    var _start, _end;
-    var THE_DAY = 4;
-    var _now    = new Date();
-    var delta   = THE_DAY - _now.getDay();
-    delta       = (delta < 0) ? 6 + delta : delta;
-
-    _end   = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta + 30);
-    _start = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta - 7);
-    return { start: _start, end: _end };
+    var start = new Date(configurations[0]);
+    var end   = new Date(configurations[1]);
+    return { start: start, end: end };
   }
 
   /*functions*/
   function _printTableTitle() {
-    _printDateByLang(2, 'לוח אירועים שבועי', '#6d9eeb').setFontSize(24).setFontWeight('bold');
-    _printDateByLang(6, 'Weekly Events Board', '#00ff00').setFontSize(24).setFontWeight('bold');
-    _printDateByLang(10, 'Расписание на неделю', '#ffff00').setFontSize(24).setFontWeight('bold');
-    _printDateByLang(14, 'Lista de Eventos Semanales', '#e06666').setFontSize(24).setFontWeight('bold');
+    _printDateByLang(2, configurations[3], '#6d9eeb').setFontSize(24).setFontWeight('bold');
+    _printDateByLang(6, configurations[2], '#00ff00').setFontSize(24).setFontWeight('bold');
+    _printDateByLang(10, configurations[4], '#ffff00').setFontSize(24).setFontWeight('bold');
+    _printDateByLang(14, configurations[5], '#e06666').setFontSize(24).setFontWeight('bold');
     resultSheet.setRowHeight(_resultCurrentRowId, 50);
+  }
+
+  function _printTitle(title) {
+    resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
+    resultSheet.setRowHeight(_resultCurrentRowId, 30);
+
+    //heb
+    _printDateByLang(2, title.heb, title.color);
+    //english
+    _printDateByLang(6, title.eng, title.color);
+    //rus
+    _printDateByLang(10, title.rus, title.color);
+    //esp
+    _printDateByLang(14, title.esp, title.color);
+
+    _separator(resultSheet.getRange(_resultCurrentRowId, 17, 1, 1));
   }
 
   function _printDay(day) {
@@ -81,6 +95,11 @@ function LoadWeekly(_resultCurrentRowId) {
       }
       _resultCurrentRowId++;
       resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
+      if (e.isTitle) {
+        _printTitle(e);
+        return;
+      }
+
       resultSheet.setRowHeight(_resultCurrentRowId, 24);
 
       _ptintHeb(e);
@@ -95,7 +114,7 @@ function LoadWeekly(_resultCurrentRowId) {
     _resultCurrentRowId++;
     resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
     resultSheet.setRowHeight(_resultCurrentRowId, 28);
-    var dateStr = Utilities.formatDate(data.date, SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 'dd/MM');
+    var dateStr = Utilities.formatDate(data.date, 'Asia/Jerusalem', 'dd/MM');
     //heb
     _printDateByLang(2, _weekDays[data.weekDay][0] + ' ' + dateStr, '#cfe2f3');
     //english
@@ -122,7 +141,7 @@ function LoadWeekly(_resultCurrentRowId) {
   }
 
   function _ptintHeb(e) {
-    var timeStr = e.start + '-' + e.end;
+    var timeStr = e.end + '-' + e.start;
     var textStr = e.heb;
     _printEvent(timeStr, textStr, 2, true);
   }
@@ -176,8 +195,9 @@ function LoadWeekly(_resultCurrentRowId) {
   }
 
   function _parseDate(row) {
+    var weekDay = Utilities.formatDate(row[0], 'Asia/Jerusalem', 'u') - 1;
     return {
-      weekDay: row[0].getDay(),
+      weekDay: weekDay,
       date: row[0],
       heb: row[3],
       eng: row[8],
@@ -197,6 +217,13 @@ function LoadWeekly(_resultCurrentRowId) {
     };
   }
 
+  function _parseTitle(row) {
+    var result     = _parseEvent(row);
+    result.color   = row[4];
+    result.isTitle = true;
+    return result;
+  }
+
   function _equalTime(a, b) {
     var a2Num = new Number(a[0]);
     var b2Num = new Number(b[0]);
@@ -208,12 +235,21 @@ function LoadWeekly(_resultCurrentRowId) {
     if (a2Num > b2Num) {
       return 1;
     }
-    if (a5Num < b5Num) {
+    if (a5Num < a5Num) {
       return -1;
     }
-    if (a5Num > b5Num) {
+    if (a5Num > a5Num) {
       return 1;
     }
     return 0;
+  }
+
+  function clearRange(range) {
+    range.clear();
+    var _merged = range.getMergedRanges();
+    if (_merged.length > 0) {
+      range.getMergedRanges().breakApart();
+    }
+    return range;
   }
 }
