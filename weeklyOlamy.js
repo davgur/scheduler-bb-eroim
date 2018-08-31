@@ -11,11 +11,17 @@ function LoadWeekly(_resultCurrentRowId) {
 
   var dataValues = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A3:AG3000').getValues();
   dataValues     = _filter(dataValues);
+  dataValues.push({ isLast: true });
   return {
     run: function (runAfterAll) {
+      clearRange(resultSheet.getRange(1, 1, 1000, 17));
       _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
       _printTableTitle();
       dataValues.forEach(function (row, key) {
+        if (row.isLast) {
+          _printDay(_theDay);
+          return;
+        }
         if (_theDay.date && row[0] && _theDay.date.date.getTime() != row[0].getTime()) {
           _printDay(_theDay);
           _theDay = {};
@@ -24,7 +30,8 @@ function LoadWeekly(_resultCurrentRowId) {
           _theDay.date   = _parseDate(row);
           _theDay.events = [];
         }
-        _theDay.events.push(_parseEvent(row));
+        var _event = row[5] == 6 ? _parseTitle(row) : _parseEvent(row);
+        _theDay.events.push(_event);
       });
       _separator(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 17));
       runAfterAll(_resultCurrentRowId);
@@ -37,19 +44,11 @@ function LoadWeekly(_resultCurrentRowId) {
       if (!(val[5] == 2 || val[5] == 3.1 || val[5] == 6)) {
         return false;
       }
-      var the_week_end   = parseInt(Utilities.formatDate(new Date(the_week.end), 'EST', 'D'));
-      var the_week_start = parseInt(Utilities.formatDate(new Date(the_week.start), 'EST', 'D'));
-      var _theDay        = parseInt(Utilities.formatDate(new Date(val[0]), 'EST', 'D'));
-
-      if (the_week_start > the_week_end) {
-        return _theDay < the_week_end || _theDay > the_week_start;
-      }
-      return _theDay < the_week_end && _theDay > the_week_start;
+      var _theDay = new Date(val[0]);
+      return _theDay <= the_week.end && _theDay > the_week.start;
     });
 
     _result.sort(_equalTime);
-    the_week.end.setDate(the_week.end.getDate() + 2);
-    _result.push([the_week.end]);
     return _result;
   }
 
@@ -60,7 +59,6 @@ function LoadWeekly(_resultCurrentRowId) {
     var delta   = THE_DAY - _now.getDay();
     delta       = (delta < 0) ? 6 + delta : delta;
     _end        = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta + parseInt(_configOfTable[0][0]));
-    //_start = new Date(_now.getYear(), _now.getMonth(), _now.getDate() + delta - 7);
     _start      = new Date(_now.getYear(), _now.getMonth(), _now.getDate() - 1);
     return { start: _start, end: _end };
   }
@@ -74,6 +72,22 @@ function LoadWeekly(_resultCurrentRowId) {
     resultSheet.setRowHeight(_resultCurrentRowId, 50);
   }
 
+  function _printTitle(title) {
+    resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
+    resultSheet.setRowHeight(_resultCurrentRowId, 30);
+
+    //heb
+    _printDateByLang(2, title.heb, title.color);
+    //english
+    _printDateByLang(6, title.eng, title.color);
+    //rus
+    _printDateByLang(10, title.rus, title.color);
+    //esp
+    _printDateByLang(14, title.esp, title.color);
+
+    _separator(resultSheet.getRange(_resultCurrentRowId, 17, 1, 1));
+  }
+
   function _printDay(day) {
     _printDate(day.date);
     day.events.forEach(function (e) {
@@ -82,6 +96,11 @@ function LoadWeekly(_resultCurrentRowId) {
       }
       _resultCurrentRowId++;
       resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
+      if (e.isTitle) {
+        _printTitle(e);
+        return;
+      }
+
       resultSheet.setRowHeight(_resultCurrentRowId, 24);
 
       _ptintHeb(e);
@@ -199,6 +218,13 @@ function LoadWeekly(_resultCurrentRowId) {
     };
   }
 
+  function _parseTitle(row) {
+    var result     = _parseEvent(row);
+    result.color   = row[4];
+    result.isTitle = true;
+    return result;
+  }
+
   function _equalTime(a, b) {
     var a2Num = new Number(a[0]);
     var b2Num = new Number(b[0]);
@@ -217,5 +243,14 @@ function LoadWeekly(_resultCurrentRowId) {
       return 1;
     }
     return 0;
+  }
+
+  function clearRange(range) {
+    range.clear();
+    var _merged = range.getMergedRanges();
+    if (_merged.length > 0) {
+      range.getMergedRanges().breakApart();
+    }
+    return range;
   }
 }

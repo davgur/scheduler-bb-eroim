@@ -46,9 +46,6 @@ function BuilderFromTo() {
         return false;
       }
       var _theDay = new Date(val[0]);
-      var end     = the_week.end;
-      var start   = the_week.start;
-
       return _theDay <= the_week.end && _theDay > the_week.start;
     });
 
@@ -235,10 +232,10 @@ function BuilderFromTo() {
     if (a2Num > b2Num) {
       return 1;
     }
-    if (a5Num < a5Num) {
+    if (a5Num < b5Num) {
       return -1;
     }
-    if (a5Num > a5Num) {
+    if (a5Num > b5Num) {
       return 1;
     }
     return 0;
