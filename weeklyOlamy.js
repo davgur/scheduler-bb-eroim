@@ -1,9 +1,13 @@
-//var weekly = new LoadWeekly(1);
-//weekly.run();
+/*
+function runscript() {
+  var weekly = new LoadWeekly(1);
+  weekly.run();
+}
+*/
 
 function LoadWeekly(_resultCurrentRowId) {
   var ss             = SpreadsheetApp.getActiveSpreadsheet();
-  var resultSheet    = ss.getSheetByName('board');
+  var resultSheet    = ss.getSheetByName('test');
   var configsSheet   = ss.getSheetByName('config');
   var _theDay        = {};
   var _weekDays      = configsSheet.getRange(3, 6, 7, 4).getValues();
@@ -14,7 +18,6 @@ function LoadWeekly(_resultCurrentRowId) {
   dataValues.push({ isLast: true });
   return {
     run: function (runAfterAll) {
-      clearRange(resultSheet.getRange(1, 1, 1000, 17));
       _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
       _printTableTitle();
       dataValues.forEach(function (row, key) {
@@ -33,7 +36,9 @@ function LoadWeekly(_resultCurrentRowId) {
         var _event = row[5] == 6 ? _parseTitle(row) : _parseEvent(row);
         _theDay.events.push(_event);
       });
-      _separator(resultSheet.getRange(_resultCurrentRowId + 1, 1, 1, 17));
+      _resultCurrentRowId++;
+      clearRange(resultSheet.getRange(_resultCurrentRowId, 1, 100, 17));
+      _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 17));
       runAfterAll(_resultCurrentRowId);
     }
   };
@@ -89,17 +94,22 @@ function LoadWeekly(_resultCurrentRowId) {
   }
 
   function _printDay(day) {
-    _printDate(day.date);
     day.events.forEach(function (e) {
-      if (!e.start && !e.end) {
+      if (e.isTitle) {
+        _resultCurrentRowId++;
+        resultSheet.getRange(_resultCurrentRowId, 1, 1, 17).clear();
+        _printTitle(e);
+      }
+    });
+
+    _printDate(day.date);
+
+    day.events.forEach(function (e) {
+      if (!e.start && !e.end || e.isTitle) {
         return;
       }
       _resultCurrentRowId++;
-      resultSheet.getRange(_resultCurrentRowId, 1, 1, 50).clear();
-      if (e.isTitle) {
-        _printTitle(e);
-        return;
-      }
+      resultSheet.getRange(_resultCurrentRowId, 1, 1, 17).clear();
 
       resultSheet.setRowHeight(_resultCurrentRowId, 24);
 

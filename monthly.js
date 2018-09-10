@@ -3,9 +3,8 @@
 
 function LoadMonthly(_resultCurrentRowId) {
   var ss           = SpreadsheetApp.getActiveSpreadsheet();
-  var resultSheet  = ss.getSheetByName('board');
+  var resultSheet  = ss.getSheetByName('test');
   var configsSheet = ss.getSheetByName('config');
-  _resultCurrentRowId++;
 
   var dataValues2018 = SpreadsheetApp.openById('1LlRo5Ob5Bw8penUEakQj_1NyfmmD-T_Dama-k81dohQ').getSheetByName('Sheet1').getRange('A2:AG3000').getValues();
   var dataValues2019 = SpreadsheetApp.openById('1HFI4KlEY72xfuEfzvYqYZ_gEKAAwiQ6aBRa3kWc44iY').getSheetByName('Sheet1').getRange('A2:O1500').getValues();
