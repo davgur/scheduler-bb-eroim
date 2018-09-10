@@ -32,12 +32,13 @@ function LoadWeeklyPT() {
         printIterator(obj, key, arr, _printEventRus, _printDateRus, obj.rus);
       });
       nextRow();
-      _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 6));
       clearRange(resultSheet.getRange(_resultCurrentRowId, 1, 100, 6));
+      _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 6));
     }
   };
 
   function printIterator(obj, key, arr, eventPrinter, dataPrinter, valueText) {
+
     nextRow();
 
     if (!obj.date) {
@@ -47,17 +48,21 @@ function LoadWeeklyPT() {
 
     if (obj.isTitle && obj.isDaily) {
       _printTitle(obj, valueText);
+      if (obj.date.getTime() != arr[key - 1].date.getTime()) {
+        nextRow();
+      }
     }
 
     if (key === 0 || obj.date.getTime() != arr[key - 1].date.getTime()) {
       dataPrinter(obj);
       _printRowSeparators();
-
-      if (obj.isTitle && obj.isDaily) {
-        return;
+      if (!(obj.isTitle && obj.isDaily)) {
+        nextRow();
       }
+    }
 
-      nextRow();
+    if (obj.isTitle && obj.isDaily) {
+      return;
     }
 
     if (obj.isTitle) {
@@ -179,8 +184,7 @@ function LoadWeeklyPT() {
     var b       = _weekDays[date.getUTCDay()][langIndex];
     var dateStr = Utilities.formatString('\'%s %s', a, b);
     _separator(resultSheet.getRange(_resultCurrentRowId, 1, 1, 6));
-    var range = resultSheet.getRange(_resultCurrentRowId, 2, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight('bold').setValue(dateStr.toString()).setHorizontalAlignment('center');
-    return range;
+    return resultSheet.getRange(_resultCurrentRowId, 2, 1, 4).merge().setBackground(bgColor).setFontSize(16).setFontWeight('bold').setValue(dateStr.toString()).setHorizontalAlignment('center');
   }
 
   function _parseEvent(row) {
