@@ -48,7 +48,7 @@ function LoadWeeklyPT() {
 
     if (obj.isTitle && obj.isDaily) {
       _printTitle(obj, valueText);
-      if (obj.date.getTime() != arr[key - 1].date.getTime()) {
+      if (key === 0 || obj.date.getTime() != arr[key - 1].date.getTime()) {
         nextRow();
       }
     }
@@ -123,7 +123,7 @@ function LoadWeeklyPT() {
 
   function _printTitle(obj, value) {
     var range = resultSheet.getRange(_resultCurrentRowId, 2, 1, 4);
-    range.setBackground(obj.color).setFontSize(20).merge().setValue(value);
+    range.setBackground(obj.color).setFontSize(obj.fontSize).merge().setValue(value);
     range.setHorizontalAlignment('center');
     _printRowSeparators();
   }
@@ -208,6 +208,7 @@ function LoadWeeklyPT() {
   }
 
   function _parseTitle(row) {
+    var isDaily = row[5] == 6;
     return {
       heb: row[3],
       rus: row[11],
@@ -216,7 +217,8 @@ function LoadWeeklyPT() {
       date: row[0],
       color: row[4],
       isTitle: true,
-      isDaily: row[5] == 6
+      isDaily: isDaily,
+      fontSize: isDaily ? 20 : 14
     };
   }
 
