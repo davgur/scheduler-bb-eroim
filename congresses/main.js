@@ -126,7 +126,7 @@ function printDayTitle(day, langConfig) {
 function printEvent(e, i, arr) {
   var addTitleTZone;
   configurations.forEach(function (x) {
-    if (i !== 0 && isNextDayByTimeZone(arr[i - 1].end, e.end, x.tzone)) {
+    if (i !== 0 && isNextDayByTimeZone(arr[i - 1].start, e.start, x.tzone)) {
       addTitleTZone = x.tzone;
     }
   });
@@ -156,7 +156,7 @@ function printDateTitle(event, langConfig) {
 
   var range      = resultSheet.getRange(currentRowByLang[langConfig.id], rangeStart(langConfig.order, 0), 1, 3);
   var dateByZone = convertDateByZone(event.end, langConfig.tzone);
-  var title      = getWeekDayName(dateByZone.getUTCDay(), langConfig.id) + ' ' + Utilities.formatDate(event.end, langConfig.tzone, 'yyyy-MM-dd');
+  var title      = getWeekDayName(dateByZone.getUTCDay() - 1, langConfig.id) + ' ' + Utilities.formatDate(event.end, langConfig.tzone, 'yyyy-MM-dd');
 
   range
     .merge()
@@ -274,6 +274,10 @@ function clearAll() {
 function getWeekDayName(day, lang) {
   if (!weekDays) {
     weekDays = SpreadsheetApp.openById('1B76zdIX2p48FEA1fvJr36DHKsQaIODQT9kWUZ8n0c7o').getSheetByName('config').getRange(3, 6, 7, 4).getValues();
+  }
+
+  if (day < 0) {
+    day = 7 + day;
   }
 
   switch (lang) {
